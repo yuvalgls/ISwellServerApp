@@ -1,8 +1,5 @@
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.sql.Date;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -22,7 +19,7 @@ public class SubClass {
         JTextField txtTimesRun;
         public void run(){
 			count++;
-            System.out.println("This is the count  : " + count);
+            System.out.println("This is the count  : " + count + " " + datehandler.getDate()) ;
     		String cd = datehandler.getDate();
     		//check if you should download a new file
     		boolean NewFile;
@@ -41,7 +38,7 @@ public class SubClass {
 	    			System.out.println("Xml was downloaded to : " + Path + "\\" + cd + ".xml");
 	    			//dbhandler.ReadFromDataBase();
 	    		}
-				dbhandler.ReadEmailListFromDataBase();
+				dbhandler.ReadEmailListFromDataBase(null);
 			} catch (Exception e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();

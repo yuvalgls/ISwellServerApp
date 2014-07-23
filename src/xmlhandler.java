@@ -1,12 +1,9 @@
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
-
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.apache.commons.io.FileUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -63,13 +60,13 @@ public class xmlhandler {
 						WindDir1 = element.getElementsByTagName("ElementValue").item(4).getTextContent();
 					break;}
 					default:
-						System.out.println("ERROR");
+						System.out.println("ERROR XMLParser");
 				}
 				String FromTime1 = element.getElementsByTagName("DateTimeFrom").item(1).getTextContent();
 				String ToTime1 = element.getElementsByTagName("DateTimeTo").item(1).getTextContent();
-				System.out.println(" LocationName " + LocationName + " FromTime0 " + FromTime0 + " ToTime0 " + ToTime0 +
-						" SeaHeight0 " + SeaHeight0 + " SeaTemp " + SeaTemp + " WindDir0 " + WindDir0 + " SeaHeight1 " + 
-						SeaHeight1 + " WindDir1 " + WindDir1 + " FromTime1 " + FromTime1 + " ToTime1 " + ToTime1 );
+				//System.out.println(" LocationName " + LocationName + " FromTime0 " + FromTime0 + " ToTime0 " + ToTime0 +
+				//		" SeaHeight0 " + SeaHeight0 + " SeaTemp " + SeaTemp + " WindDir0 " + WindDir0 + " SeaHeight1 " + 
+				//		SeaHeight1 + " WindDir1 " + WindDir1 + " FromTime1 " + FromTime1 + " ToTime1 " + ToTime1 );
 					
 				dbhandler.WriteToDB(LocationName,FromTime0,ToTime0,SeaHeight0,SeaTemp,WindDir0,FromTime1,ToTime1,SeaHeight1,WindDir1,XmlFile);
 			}

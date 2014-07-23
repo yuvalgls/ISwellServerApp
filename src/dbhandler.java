@@ -4,10 +4,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import javax.swing.JTextArea;
+
 
 public class dbhandler {
 	
-	@SuppressWarnings("null")
 	public static String[] ReadWaveDataFromDataBase(String location) throws Exception{
 		//System.out.println("Reading From DataBase");
 		String DB_URL = "jdbc:mysql://localhost/ISwell";
@@ -24,7 +25,7 @@ public class dbhandler {
 	    location = GetLocationTranslate(location);
 	    String[] dbdata = new String[15];
 	    while(rs.next()){
-	    	int dbid = rs.getInt("id");
+	    	//int dbid = rs.getInt("id");
 	    	dbdata[0] = rs.getString("LocationName");
 	    	dbdata[1] = rs.getString("FromTime0");
 	    	dbdata[2] = rs.getString("ToTime0");
@@ -40,7 +41,7 @@ public class dbhandler {
 	    	dbdata[12] = rs.getString("WindDir1");
 	    	dbdata[13] = rs.getString("WindBlow1");
 	    	dbdata[14] = rs.getString("FileName");
-	    	String UpOrDown = null;
+	    	//String UpOrDown = null;
 	    	if(dbdata[0].equals(location)){
 	    		return dbdata;
 	    	}
@@ -57,11 +58,11 @@ public class dbhandler {
 		   Connection conn = null;
 		   Statement stmt = null;
 		   int location = SeaHeight0.indexOf("/");
-		   System.out.println("SeaHeight0 " + SeaHeight0 + " WindDir0 " + WindDir0 + " location " + location);
+		   //System.out.println("SeaHeight0 " + SeaHeight0 + " WindDir0 " + WindDir0 + " location " + location);
 		   String SeaHeightDesc0 = SeaHeight0.substring(0,location-1);
 		   SeaHeight0 = SeaHeight0.substring(location+1);
 		   location = SeaHeight1.indexOf("/");
-		   System.out.println("SeaHeight1 " + SeaHeight1 + " WindDir1 " + WindDir1 + " location " + location);
+		   //System.out.println("SeaHeight1 " + SeaHeight1 + " WindDir1 " + WindDir1 + " location " + location);
 		   String SeaHeightDesc1 = SeaHeight1.substring(0,location-1);
 		   SeaHeight1 = SeaHeight1.substring(location+1);
 		   location = WindDir0.indexOf("/");
@@ -95,8 +96,8 @@ public class dbhandler {
 		   //System.out.println("Finished writing : " + LocationName);
 		}
 
-	public static void ReadEmailListFromDataBase() throws Exception{
-		System.out.println("Reading From DataBase : ISwell , clients");
+	public static void ReadEmailListFromDataBase(JTextArea textAreaEmailLog) throws Exception{
+		//System.out.println("Reading From DataBase : ISwell , clients");
 		String DB_URL = "jdbc:mysql://localhost/ISwell";
 		String USER = "root";
 		String PASS = "MySQLPassWord";
@@ -108,12 +109,13 @@ public class dbhandler {
 	    String sql = "select * from clients order by id desc";
 	    ResultSet rs = stmt.executeQuery(sql);
 	    while(rs.next()){
-	    	int dbid = rs.getInt("id");
+	    	//int dbid = rs.getInt("id");
 	    	String dbusername = rs.getString("username");
 	    	String dbemail = rs.getString("email");
 	    	String dbLastTimeSent = rs.getString("LastTimeSent");
 	    	String dbToSend = rs.getString("ToSend");
 	    	String dblocation = rs.getString("location");
+	    	System.out.println(" ");
 	    	System.out.println("Handeling : " + dbusername);
 	    	String dbPreferTimeToGetEmail = rs.getString("PreferTimeToGetEmail");
 	    	if(Integer.valueOf(dbToSend) == 1){
@@ -126,9 +128,15 @@ public class dbhandler {
 		    		if(Integer.parseInt(PreferTime) <= Integer.parseInt(currenttime) && (Integer.parseInt(currentdate)>Integer.parseInt(LastTime))  ){
 		    			int location = dblocation.indexOf(",");
 		    			//System.out.println(dblocation.substring(0,1));
-		    			emailhandler.PrepperEmailComtent(dbemail, dblocation.substring(0,1));
+		    			//emailhandler.PrepperEmailComtent(dbemail, dblocation.substring(0,1));
+		    			emailhandler.SendEmailAsHTML(dbemail, dblocation.substring(location-1,location));
 		    			while(location >= 0){
-		    				emailhandler.PrepperEmailComtent(dbemail, dblocation.substring(location+1,location+2));
+		    				//update textAreaEmailLog
+		    		    	textAreaEmailLog.append(datehandler.getDate() + " Emailing : " + dbemail + "/n ");
+		    		    	textAreaEmailLog.update(textAreaEmailLog.getGraphics());
+		    		    	
+		    				//emailhandler.PrepperEmailComtent(dbemail, dblocation.substring(location+1,location+2));
+		    				emailhandler.SendEmailAsHTML(dbemail, dblocation.substring(location+1,location+2));
 		    				location = dblocation.indexOf(",",location+1);
 		    				//System.out.println(dblocation.substring(location+1,location+2));
 		    				if(location==(-1)){
@@ -161,13 +169,14 @@ public class dbhandler {
 	    String result = null;
 	    SeaHeight = SeaHeight.replaceAll("\\s+", "");
 	    while(rs.next()){
-	    	int dbid = rs.getInt("id");
+	    	//int dbid = rs.getInt("id");
 	    	String Code = rs.getString("Code");
 	    	Code.trim();
-	    	String SeaStatusEng = rs.getString("SeaStatusEng");
-	    	//String SeaStatusHeb = rs.getString("SeaStatusHeb");
+	    	//String SeaStatusEng = rs.getString("SeaStatusEng");
+	    	String SeaStatusHeb = rs.getString("SeaStatusHeb");
 	    	if(Code.equals(SeaHeight)){
-	    		result = SeaStatusEng.trim();
+	    		//result = SeaStatusEng.trim();
+	    		result = SeaStatusHeb.trim();
     			//System.out.println(result);
 	    		break;
 	    	}
@@ -197,16 +206,16 @@ public class dbhandler {
 	    	String b = Wind.substring(location+1);
 	    	b = b.replaceAll("\\s+", "");
 	    	while(rs.next()){
-	    		int dbid = rs.getInt("id");
+	    		//int dbid = rs.getInt("id");
 	    		String Code = rs.getString("Code");
 	    		Code.trim();
 	    		//String WindDirectionHeb = rs.getString("WindDirectionHeb");
 	    		if(Code.equals(b)){
-	    			String WindDirectionEng = rs.getString("WindDirectionEng");
+	    			String WindDirectionEng = rs.getString("WindDirectionHeb");
 	    			result[1] = WindDirectionEng.trim();
 	    		}
 	    		if(Code.equals(a)){
-		    		String WindDirectionEng = rs.getString("WindDirectionEng");
+		    		String WindDirectionEng = rs.getString("WindDirectionHeb");
 		    		result[0] = WindDirectionEng.trim();
 		    	}
 	    
