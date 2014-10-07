@@ -8,6 +8,7 @@ import javax.swing.JButton;
 
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -48,7 +49,7 @@ public class ISwell {
 	private void initialize() {
 		frmIswellcoilCp = new JFrame();
 		frmIswellcoilCp.setTitle("ISwell.co.il CP");
-		frmIswellcoilCp.setBounds(100, 100, 552, 555);
+		frmIswellcoilCp.setBounds(100, 100, 950, 950);
 		frmIswellcoilCp.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frmIswellcoilCp.getContentPane().setLayout(null);
 		
@@ -80,61 +81,88 @@ public class ISwell {
 		txtNextRun.setColumns(10);
 		
 		final JTextArea txtDataLog = new JTextArea();
-		txtDataLog.setBounds(10, 100, 200, 350);
+		txtDataLog.setBounds(10, 100, 200, 810);
 		frmIswellcoilCp.getContentPane().add(txtDataLog);
 		
 		final JTextArea txtEmailLog = new JTextArea();
-		txtEmailLog.setBounds(300, 100, 200, 350);
+		txtEmailLog.setBounds(250, 100, 300, 810);
 		frmIswellcoilCp.getContentPane().add(txtEmailLog);
 		
 		JLabel lblNewLabel_2 = new JLabel("Data Log : ");
 		lblNewLabel_2.setBounds(10, 75, 100, 20);
 		frmIswellcoilCp.getContentPane().add(lblNewLabel_2);
 		
+		final JTextArea txtSMSLog = new JTextArea();
+		txtSMSLog.setBounds(600, 100, 300, 810);
+		frmIswellcoilCp.getContentPane().add(txtSMSLog);
+		
+		JLabel lblNewLabel_4 = new JLabel("SMS Log : ");
+		lblNewLabel_4.setBounds(600, 75, 100, 20);
+		frmIswellcoilCp.getContentPane().add(lblNewLabel_4);
+		
+		
 		JLabel lblNewLabel_3 = new JLabel("Email Log :");
-		lblNewLabel_3.setBounds(300, 75, 100, 20);
+		lblNewLabel_3.setBounds(250, 75, 100, 20);
 		frmIswellcoilCp.getContentPane().add(lblNewLabel_3);
 		
 		JButton btnNewButton = new JButton("Go...");
 		btnNewButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				
-
+				txtStarted.setText(datehandler.getDate());
 				//SubClass.StartHere(txtTimesRun);
 				int i=0;
 				while(i == 0){
 					//System.out.println(datehandler.getDate());
 					txtLastRun.setText(datehandler.getDate());
-					System.out.println(datehandler.getDate()) ;
+					//System.out.println(datehandler.getDate()) ;
 		    		String cd = datehandler.getDate();
-		    		txtStarted.setText(cd);
+		    		//txtStarted.setText(cd);
 		    		//check if you should download a new file
-		    		boolean NewFile;
+		    		boolean analyze;
+		    		String XMLFile;
 					try {
-						NewFile = filehandler.ShouldDownLoadNewFile(cd);
-						if(NewFile == true ){
-			    			String Path = "C:\\ISwell\\DownloadFolder";
-			    			URL url = null;
-			    			try {
-			    				url = new URL("http://www.ims.gov.il/ims/PublicXML/isr_sea.xml");
-			    			} catch (MalformedURLException e) {
-			    				e.printStackTrace();
-			    			}
-			    			//download the file and store the data on the mysql server
-			    			filehandler.DownLoadFile(cd + ".xml", Path , url);
-			    			System.out.println("Xml was downloaded to : " + Path + "\\" + cd + ".xml");
-			    			txtDataLog.append("Data update on : " + cd);
-			    			//dbhandler.ReadFromDataBase();
-			    		}
-						dbhandler.ReadEmailListFromDataBase(txtEmailLog);
+						//NewFile = filehandler.ShouldDownLoadNewFile(cd);
+		    			String Path = "C:\\ISwell\\DownloadFolder";
+		    			URL url = null;
+		    			try {
+		    				url = new URL("http://www.ims.gov.il/ims/PublicXML/isr_sea.xml");
+		    			} catch (MalformedURLException e) {
+		    				e.printStackTrace();
+		    			}
+		    			XMLFile = filehandler.DownLoadFile(cd + ".xml", Path , url);
+		    			analyze = SubClass.shouldanalyzexml(XMLFile);
+		    			if(analyze == true){
+		    				xmlhandler.XMLParser(XMLFile);
+		    				txtDataLog.insert("Data update on : " + cd + "\n", 0);
+		    			}else{
+		    				File file = new File(XMLFile);
+		    				file.delete();
+		    			}
+						dbhandler.ReadEmailListFromDataBase(txtEmailLog , txtSMSLog);
 					} catch (Exception e1) {
 						e1.printStackTrace();
 					}
-					for(int a=3600 ; a>0 ; a--){
+					// 3600 for an hour
+					// 1800 for an half an hour
+					// 900 for 15 min
+					// 450 for 7.5 min
+					// 300 for 5 min
+					for(int a=300 ; a>0 ; a--){
+//						if(txtEmailLog.getLineCount()>50){
+//							txtEmailLog.repla
+//						}
 						frmIswellcoilCp.update(frmIswellcoilCp.getGraphics());
-						txtEmailLog.update(txtEmailLog.getGraphics());
-						txtNextRun.setText(String.valueOf(a));
-						txtNextRun.update(txtNextRun.getGraphics());
+						if(a%60>=10){
+							txtEmailLog.update(txtEmailLog.getGraphics());
+							txtNextRun.setText(String.valueOf(a/60 + ":" + a%60));
+							txtNextRun.update(txtNextRun.getGraphics());
+						}else{
+							txtEmailLog.update(txtEmailLog.getGraphics());
+							txtNextRun.setText(String.valueOf(a/60 + ":0" + a%60));
+							txtNextRun.update(txtNextRun.getGraphics());
+						}
+						
 						try {
 							Thread.sleep(1000);
 						} catch (InterruptedException e2) {

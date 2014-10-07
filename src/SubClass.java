@@ -1,49 +1,41 @@
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.io.File;
+import java.io.IOException;
+import java.sql.SQLException;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
-import javax.swing.JTextField;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 
 public class SubClass {
-	
-	private static Timer timer;
-    public static int count = 0;
-	public static void StartHere(Object txtTimesRun) {
-		timer = new Timer();
-        timer.schedule(new SubClass.TimerListenerDownload(), 1000, 3600000);
-        //timer.schedule(new TimerListener(), 1000);
-    }
-	public static class TimerListenerDownload extends TimerTask {
-        JTextField txtTimesRun;
-        public void run(){
-			count++;
-            System.out.println("This is the count  : " + count + " " + datehandler.getDate()) ;
-    		String cd = datehandler.getDate();
-    		//check if you should download a new file
-    		boolean NewFile;
-			try {
-				NewFile = filehandler.ShouldDownLoadNewFile(cd);
-				if(NewFile == true ){
-	    			String Path = "C:\\ISwell\\DownloadFolder";
-	    			URL url = null;
-	    			try {
-	    				url = new URL("http://www.ims.gov.il/ims/PublicXML/isr_sea.xml");
-	    			} catch (MalformedURLException e) {
-	    				e.printStackTrace();
-	    			}
-	    			//download the file and store the data on the mysql server
-	    			filehandler.DownLoadFile(cd + ".xml", Path , url);
-	    			System.out.println("Xml was downloaded to : " + Path + "\\" + cd + ".xml");
-	    			//dbhandler.ReadFromDataBase();
-	    		}
-				dbhandler.ReadEmailListFromDataBase(null);
-			} catch (Exception e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
+    public static boolean shouldanalyzexml(String XMLFile) throws ClassNotFoundException, SQLException, SAXException, IOException{
+    	String FromTime = dbhandler.Simplesql("iswell", "xmlparser", "FromTime0");
+    	String FromTime0 = null;
+    	File fXmlFile = new File(XMLFile);
+		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder dBuilder;
+		try {
+			dBuilder = dbFactory.newDocumentBuilder();
+			org.w3c.dom.Document doc = dBuilder.parse(fXmlFile);
+			doc.getDocumentElement().normalize();
+			NodeList aList = doc.getElementsByTagName("Location");
+			Element element;
+			for(int a = 0; a < aList.getLength(); a++){
+				element = (Element) aList.item(a);
+				//System.out.println(aList.item(a));
+				FromTime0 = element.getElementsByTagName("DateTimeFrom").item(0).getTextContent();
 			}
-			
-        }
+		}catch (ParserConfigurationException e) {
+			e.printStackTrace();
+			}
+		if(Integer.valueOf(FromTime0.substring(11,12)) == Integer.valueOf(FromTime.substring(11,12))){
+			return false;
+		}else{
+			return true;
+		}
+		
     }
 }

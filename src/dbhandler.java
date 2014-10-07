@@ -10,7 +10,6 @@ import javax.swing.JTextArea;
 public class dbhandler {
 	
 	public static String[] ReadWaveDataFromDataBase(String location) throws Exception{
-		//System.out.println("Reading From DataBase");
 		String DB_URL = "jdbc:mysql://localhost/ISwell";
 		String USER = "root";
 		String PASS = "MySQLPassWord";
@@ -19,13 +18,11 @@ public class dbhandler {
 		Class.forName("com.mysql.jdbc.Driver");
 	    conn = DriverManager.getConnection(DB_URL, USER, PASS);
 	    stmt = conn.createStatement();
-	    //String sql1 = "select max(id) from XMLParser";
 	    String sql = "select * from XMLParser order by id desc limit 4";
 	    ResultSet rs = stmt.executeQuery(sql);
 	    location = GetLocationTranslate(location);
 	    String[] dbdata = new String[15];
 	    while(rs.next()){
-	    	//int dbid = rs.getInt("id");
 	    	dbdata[0] = rs.getString("LocationName");
 	    	dbdata[1] = rs.getString("FromTime0");
 	    	dbdata[2] = rs.getString("ToTime0");
@@ -41,7 +38,6 @@ public class dbhandler {
 	    	dbdata[12] = rs.getString("WindDir1");
 	    	dbdata[13] = rs.getString("WindBlow1");
 	    	dbdata[14] = rs.getString("FileName");
-	    	//String UpOrDown = null;
 	    	if(dbdata[0].equals(location)){
 	    		return dbdata;
 	    	}
@@ -50,19 +46,15 @@ public class dbhandler {
 	}
 	
 	public static void WriteToDB (String LocationName,String FromTime0,String ToTime0,String SeaHeight0,String SeaTemp,String WindDir0,String FromTime1,String ToTime1,String SeaHeight1,String WindDir1,String XmlFile){
-		   // JDBC driver name and database URL
-		   //final String JDBC_DRIVER = "com.mysql.jdbc.Driver";  
 		   String DB_URL = "jdbc:mysql://localhost/ISwell";
 		   String USER = "root";
 		   String PASS = "MySQLPassWord";
 		   Connection conn = null;
 		   Statement stmt = null;
 		   int location = SeaHeight0.indexOf("/");
-		   //System.out.println("SeaHeight0 " + SeaHeight0 + " WindDir0 " + WindDir0 + " location " + location);
 		   String SeaHeightDesc0 = SeaHeight0.substring(0,location-1);
 		   SeaHeight0 = SeaHeight0.substring(location+1);
 		   location = SeaHeight1.indexOf("/");
-		   //System.out.println("SeaHeight1 " + SeaHeight1 + " WindDir1 " + WindDir1 + " location " + location);
 		   String SeaHeightDesc1 = SeaHeight1.substring(0,location-1);
 		   SeaHeight1 = SeaHeight1.substring(location+1);
 		   location = WindDir0.indexOf("/");
@@ -79,8 +71,6 @@ public class dbhandler {
 		      		+ "('"+LocationName +"'),('" +FromTime0 +"'),('"+ToTime0+"'),('"+SeaHeight0+"'),('"+SeaHeightDesc0+"'),('"+SeaTemp+"'),('"+WindDir0+"'),('"+WindBlow0+"'),('"+FromTime1+"'),('"+ToTime1+
 		      		"'),('"+SeaHeight1+"'),('"+SeaHeightDesc1+"'),('"+WindDir1+"'),('"+WindBlow1+"'),('"+(XmlFile.substring(XmlFile.length()-16))+"')FROM XMLParser";
 		      stmt.executeUpdate(sql2);
-		      
-		      //emailhandler.PrepperEmailComtent(LocationName,FromTime0,ToTime0,SeaHeight0,SeaTemp,WindDir0,FromTime1,ToTime1,SeaHeight1,WindDir1,XmlFile);
 		   }catch(SQLException se){
 		      se.printStackTrace();
 		   }catch(Exception e1){
@@ -93,69 +83,137 @@ public class dbhandler {
 		         se.printStackTrace();
 		      }
 		   }
-		   //System.out.println("Finished writing : " + LocationName);
 		}
 
-	public static void ReadEmailListFromDataBase(JTextArea textAreaEmailLog) throws Exception{
-		//System.out.println("Reading From DataBase : ISwell , clients");
+	public static void ReadEmailListFromDataBase(JTextArea textAreaEmailLog , JTextArea textAreaSMSLog) throws Exception{
 		String DB_URL = "jdbc:mysql://localhost/ISwell";
 		String USER = "root";
 		String PASS = "MySQLPassWord";
 		Connection conn = null;
 		Statement stmt = null;
+		Statement stmt1 = null;
 		Class.forName("com.mysql.jdbc.Driver");
 	    conn = DriverManager.getConnection(DB_URL, USER, PASS);
 	    stmt = conn.createStatement();
 	    String sql = "select * from clients order by id desc";
 	    ResultSet rs = stmt.executeQuery(sql);
 	    while(rs.next()){
-	    	//int dbid = rs.getInt("id");
 	    	String dbusername = rs.getString("username");
+	    	if(dbusername.toLowerCase() == "Yuval".toLowerCase()){
+	    		System.out.println("Stoping");
+	    	}
 	    	String dbemail = rs.getString("email");
 	    	String dbLastTimeSent = rs.getString("LastTimeSent");
 	    	String dbToSend = rs.getString("ToSend");
 	    	String dblocation = rs.getString("location");
-	    	System.out.println(" ");
-	    	System.out.println("Handeling : " + dbusername);
+	    	String dbfromheight = rs.getString("SendFromHeight");
 	    	String dbPreferTimeToGetEmail = rs.getString("PreferTimeToGetEmail");
-	    	if(Integer.valueOf(dbToSend) == 1){
+	    	String SendToPhone = rs.getString("SendToPhone");
+	    	String PhoneNum = rs.getString("PhoneNum");
+	    	System.out.println(" ");
+	    	System.out.println("Handeling : " + dbusername + " from height " + dbfromheight);
 	    		String cd = datehandler.getDate();
 		    	String currenttime = cd.substring(8,10);
 		    	String currentdate = cd.substring(6,8);
 		    	String PreferTime =dbPreferTimeToGetEmail.substring(0,2);
 		    	String LastTime =dbLastTimeSent.substring(8,10);
-		    	//if(Integer.parseInt(dbToSend)==1){
-		    		if(Integer.parseInt(PreferTime) <= Integer.parseInt(currenttime) && (Integer.parseInt(currentdate)>Integer.parseInt(LastTime))  ){
+		    	if(Integer.parseInt(dbToSend)==1 || Integer.valueOf(SendToPhone) ==1){
+		    		if(Integer.parseInt(PreferTime) <= Integer.parseInt(currenttime) && (Integer.parseInt(currentdate)!=Integer.parseInt(LastTime))  ){
 		    			int location = dblocation.indexOf(",");
-		    			//System.out.println(dblocation.substring(0,1));
-		    			//emailhandler.PrepperEmailComtent(dbemail, dblocation.substring(0,1));
-		    			emailhandler.SendEmailAsHTML(dbemail, dblocation.substring(location-1,location));
+		    			if(location==(-1)){
+		    		    	String sql1 = "SELECT * FROM iswell.xmlparser WHERE LocationName='"+ dbhandler.GetLocationTranslate(dblocation) +"' order by id desc limit 1;";
+		    		    	stmt1 = conn.createStatement();
+		    			    ResultSet rs1 = stmt1.executeQuery(sql1);
+		    			    rs1.next();
+		    		    	String dbheight = rs1.getString("SeaHeight0");
+		    		    	dbheight = dbheight.substring(dbheight.indexOf("-")+1);
+		    		    	System.out.println("dbfromheight = " + dbfromheight + " dbheight = " + dbheight);
+		    		    	if(Integer.valueOf(dbheight)>Integer.valueOf(dbfromheight)){
+		    		    		if(Integer.parseInt(dbToSend) == 1){
+		    		    			textAreaEmailLog.insert(datehandler.getDate() + " Emailing : " + dbemail + "\n", 0);
+			    		    		textAreaEmailLog.update(textAreaEmailLog.getGraphics());
+			    		    		emailhandler.SendEmailAsHTML(dbemail, dblocation);
+			    		    		dbhandler.WriteLastSend(dbemail);
+		    		    		}
+		    		    		if(Integer.parseInt(SendToPhone) == 1){
+		    		    			textAreaSMSLog.insert(datehandler.getDate() +  " SMSing : " + dbusername + " " + PhoneNum + "\n", 0);
+			    		    		textAreaSMSLog.update(textAreaSMSLog.getGraphics());
+		    		    			smshandler.sendsms(PhoneNum, dblocation);
+		    		    			dbhandler.WriteLastSend(dbemail);
+		    		    		}
+		    		    	}else{
+		    		    		System.out.println(Integer.valueOf(dbheight) + " >= " + Integer.valueOf(dbfromheight));
+		    		    	}
+		    				
+		    			}else{
+		    				String sql1 = "SELECT * FROM iswell.xmlparser WHERE LocationName='"+ dbhandler.GetLocationTranslate(dblocation.substring(location-1,location)) +"' order by id desc limit 1;";
+		    		    	stmt1 = conn.createStatement();
+		    			    ResultSet rs1 = stmt1.executeQuery(sql1);
+		    			    rs1.next();
+		    		    	String dbheight = rs1.getString("SeaHeight0");
+		    		    	dbheight = dbheight.substring(dbheight.indexOf("-")+1);
+		    		    	System.out.println("dbfromheight = " + dbfromheight + " dbheight = " + dbheight);
+		    		    	if(Integer.valueOf(dbheight) >= Integer.valueOf(dbfromheight)){
+		    		    		if(Integer.parseInt(dbToSend) == 1){
+		    		    			textAreaEmailLog.insert(datehandler.getDate() + " Emailing : " + dbemail + "\n", 0);
+			    		    		textAreaEmailLog.update(textAreaEmailLog.getGraphics());
+			    		    		emailhandler.SendEmailAsHTML(dbemail, dblocation.substring(location-1,location));
+			    		    		dbhandler.WriteLastSend(dbemail);
+		    		    		}
+		    		    		if(Integer.parseInt(SendToPhone) == 1){
+		    		    			textAreaSMSLog.insert(datehandler.getDate() +  " SMSing : " + dbusername + " " + PhoneNum + "\n", 0);
+			    		    		textAreaSMSLog.update(textAreaSMSLog.getGraphics());
+		    		    			smshandler.sendsms(PhoneNum, dblocation.substring(location-1,location));
+		    		    			dbhandler.WriteLastSend(dbemail);
+		    		    		}
+			    				
+		    		    	}else{
+		    		    		System.out.println(Integer.valueOf(dbheight) + " >= " + Integer.valueOf(dbfromheight));
+		    		    	}
+		    			}
 		    			while(location >= 0){
-		    				//update textAreaEmailLog
-		    		    	textAreaEmailLog.append(datehandler.getDate() + " Emailing : " + dbemail + "/n ");
-		    		    	textAreaEmailLog.update(textAreaEmailLog.getGraphics());
-		    		    	
-		    				//emailhandler.PrepperEmailComtent(dbemail, dblocation.substring(location+1,location+2));
-		    				emailhandler.SendEmailAsHTML(dbemail, dblocation.substring(location+1,location+2));
-		    				location = dblocation.indexOf(",",location+1);
-		    				//System.out.println(dblocation.substring(location+1,location+2));
-		    				if(location==(-1)){
+		    				String sql1 = "SELECT * FROM iswell.xmlparser WHERE LocationName='"+ dbhandler.GetLocationTranslate(dblocation.substring(location+1,location+2)) +"' order by id desc limit 1;";
+		    		    	stmt1 = conn.createStatement();
+		    			    ResultSet rs1 = stmt1.executeQuery(sql1);
+		    			    rs1.next();
+		    		    	String dbheight = rs1.getString("SeaHeight0");
+		    		    	dbheight = dbheight.substring(dbheight.indexOf("-")+1);
+		    		    	if(Integer.valueOf(dbheight) >= Integer.valueOf(dbfromheight)){
+		    		    		if(Integer.parseInt(dbToSend) == 1){
+		    		    			textAreaEmailLog.insert(datehandler.getDate() + " Emailing : " + dbemail + "\n", 0);
+			    		    		textAreaEmailLog.update(textAreaEmailLog.getGraphics());
+			    		    		emailhandler.SendEmailAsHTML(dbemail, dblocation.substring(location+1,location+2));
+			    		    		dbhandler.WriteLastSend(dbemail);
+		    		    		}
+		    		    		if(Integer.parseInt(SendToPhone) == 1){
+		    		    			textAreaSMSLog.insert(datehandler.getDate() +  " SMSing : " + dbusername + " " + PhoneNum + "\n", 0);
+			    		    		textAreaSMSLog.update(textAreaSMSLog.getGraphics());
+		    		    			smshandler.sendsms(PhoneNum, dblocation.substring(location+1,location+2));
+		    		    			dbhandler.WriteLastSend(dbemail);
+		    		    		}
+		    		    		
+		    		    	}else{
+		    		    		System.out.println(Integer.valueOf(dbheight) + " >= " + Integer.valueOf(dbfromheight));
+		    		    	}
+		    		    	location = dblocation.indexOf(",",location+1);
+		    		    	if(location==(-1)){
 		    					break;
 		    				}
+		    		    	
 		    			}
+		    			
 		    		}else{
 		    			System.out.println("PreferTime <= currenttime : " + Integer.parseInt(PreferTime) + " <= " +  Integer.parseInt(currenttime));
-			    		System.out.println("currentdate <= LastTime " + Integer.parseInt(currentdate) + " > " + Integer.parseInt(LastTime));
+			    		System.out.println("currentdate != LastTime : " + Integer.parseInt(currentdate) + " != " + Integer.parseInt(LastTime));
 		    		}
 		    	}else{
-		    		System.out.println(dbusername + " doesnt want to get an email");
+		    		System.out.println(dbusername + " doesnt want to get an email or SMS");
 		    	}
-	    	}
 	    }
+	}
 	
 
 	public static String GetWaveTranslate(String SeaHeight) throws Exception{
-		//System.out.println("Translating SeaHeight " + SeaHeight);
 		String DB_URL = "jdbc:mysql://localhost/ISwell";
 		String USER = "root";
 		String PASS = "MySQLPassWord";
@@ -169,15 +227,11 @@ public class dbhandler {
 	    String result = null;
 	    SeaHeight = SeaHeight.replaceAll("\\s+", "");
 	    while(rs.next()){
-	    	//int dbid = rs.getInt("id");
 	    	String Code = rs.getString("Code");
 	    	Code.trim();
-	    	//String SeaStatusEng = rs.getString("SeaStatusEng");
 	    	String SeaStatusHeb = rs.getString("SeaStatusHeb");
 	    	if(Code.equals(SeaHeight)){
-	    		//result = SeaStatusEng.trim();
 	    		result = SeaStatusHeb.trim();
-    			//System.out.println(result);
 	    		break;
 	    	}
 	    }
@@ -187,7 +241,6 @@ public class dbhandler {
 
 	public static String[] GetWindTranslate(String Wind) throws Exception{
 		String[] result = new String[2];
-		//System.out.println("Translating Wind " + Wind);
 		String DB_URL = "jdbc:mysql://localhost/ISwell";
 		String USER = "root";
 		String PASS = "MySQLPassWord";
@@ -206,10 +259,8 @@ public class dbhandler {
 	    	String b = Wind.substring(location+1);
 	    	b = b.replaceAll("\\s+", "");
 	    	while(rs.next()){
-	    		//int dbid = rs.getInt("id");
 	    		String Code = rs.getString("Code");
 	    		Code.trim();
-	    		//String WindDirectionHeb = rs.getString("WindDirectionHeb");
 	    		if(Code.equals(b)){
 	    			String WindDirectionEng = rs.getString("WindDirectionHeb");
 	    			result[1] = WindDirectionEng.trim();
@@ -226,7 +277,6 @@ public class dbhandler {
 	}
 	
 	public static String GetLocationTranslate(String location) throws Exception{
-		//System.out.println("Translating SeaHeight " + location);
 		String DB_URL = "jdbc:mysql://localhost/ISwell";
 		String USER = "root";
 		String PASS = "MySQLPassWord";
@@ -240,20 +290,34 @@ public class dbhandler {
 	    String result = null;
 	    location = location.replaceAll("\\s+", "");
 	    while(rs.next()){
-	    	//int dbid = rs.getInt("id");
 	    	String Code = rs.getString("Code");
 	    	Code.trim();
 	    	String Location = rs.getString("Location");
-	    	//String SeaStatusHeb = rs.getString("SeaStatusHeb");
 	    	if(Code.equals(location)){
 	    		result = Location.trim();
-	    		//System.out.println(result);
 	    		break;
 	    	}
 	    }
 	    return result;
 	   
 	}
+	public static String Simplesql(String db, String table, String field) throws SQLException, ClassNotFoundException{
+		String DB_URL = "jdbc:mysql://localhost/" + db;
+		String USER = "root";
+		String PASS = "MySQLPassWord";
+		Connection conn = null;
+		Statement stmt = null;
+		Class.forName("com.mysql.jdbc.Driver");
+	    conn = DriverManager.getConnection(DB_URL, USER, PASS);
+	    stmt = conn.createStatement();
+	    String sql = "select " + field + " from " + table +" order by id desc limit 4";
+	    ResultSet rs = stmt.executeQuery(sql);
+	    String result = null;
+	    while(rs.next()){
+	    	result = rs.getString(field);
+	    }
+	    return result;
+	    }
 
 	public static void WriteLastSend(String Email) throws Exception{
 		String ch = datehandler.getHour();
@@ -280,5 +344,5 @@ public class dbhandler {
 		         se.printStackTrace();
 		      }
 		   }
-		}
-}
+		   }
+	}

@@ -25,7 +25,7 @@ public class xmlhandler {
 	}*/	
 	
 	public static void XMLParser (String XmlFile){
-		System.out.println("Starting parsering XML file " + XmlFile);
+		//System.out.println("Starting parsering XML file " + XmlFile);
 		File fXmlFile = new File(XmlFile);
 		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder dBuilder;
