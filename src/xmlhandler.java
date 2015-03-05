@@ -1,10 +1,17 @@
 import java.io.File;
 import java.io.IOException;
+import java.sql.SQLException;
+
+import javax.mail.MessagingException;
+import javax.mail.internet.AddressException;
+import javax.swing.JTextArea;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
@@ -23,8 +30,64 @@ public class xmlhandler {
 		String  XMLFile = (Path + "\\" + cd + ".xml");
 		xmlhandler.XMLParser(XMLFile);
 	}*/	
-	
-	public static void XMLParser (String XmlFile){
+	public static void WarningXMLParser(String XmlFile, JTextArea textAreaEmailLog, JTextArea txtDataLog) throws ParserConfigurationException, SAXException, IOException, AddressException, MessagingException, ClassNotFoundException, SQLException{
+		String Source = XmlFile;
+		File fXmlFile = new File(Source);
+		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+		Document doc = dBuilder.parse(fXmlFile);
+	 
+		String description = null;
+		String msgdate = null;
+		//optional, but recommended
+		//read this - http://stackoverflow.com/questions/13786607/normalization-in-dom-parsing-with-java-how-does-it-work
+		doc.getDocumentElement().normalize();
+//		System.out.println("Root element :" + doc.getDocumentElement().getNodeName());
+		NodeList nList = doc.getElementsByTagName("channel");
+		int del = 0;
+//		System.out.println("starting warning del = " + del);
+		for (int temp = 0; temp < nList.getLength(); temp++) { 
+			Node nNode = nList.item(temp);
+//			System.out.println("\nCurrent Element :" + nNode.getNodeName());
+			if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+				Element eElement = (Element) nNode;
+//				System.out.println("title : " + eElement.getAttribute("title"));
+//				System.out.println("link : " + eElement.getElementsByTagName("link").item(0).getTextContent());
+//				System.out.println("description : " + eElement.getElementsByTagName("description").item(0).getTextContent());
+//				System.out.println("language : " + eElement.getElementsByTagName("language").item(0).getTextContent());
+//				System.out.println("lastBuildDate : " + eElement.getElementsByTagName("lastBuildDate").item(0).getTextContent());
+//				System.out.println("ttl : " + eElement.getElementsByTagName("ttl").item(0).getTextContent());
+				NodeList nList1 = eElement.getElementsByTagName("item");
+				for (int temp1 = 0; temp1 < nList1.getLength(); temp1++) {
+					Node nNode1 = nList1.item(temp1);
+//					System.out.println("\nCurrent Element :" + nNode1.getNodeName());
+					if (nNode1.getNodeType() == Node.ELEMENT_NODE) {
+						Element eElement1 = (Element) nNode1;
+//						System.out.println("title : " + eElement1.getElementsByTagName("title").item(0).getTextContent());
+//						System.out.println("link" + eElement1.getElementsByTagName("link").item(0).getTextContent());
+//						System.out.println("description : " + eElement1.getElementsByTagName("description").item(0).getTextContent());
+//						System.out.println("pubDate : " + eElement1.getElementsByTagName("pubDate").item(0).getTextContent());
+						description = eElement1.getElementsByTagName("description").item(0).getTextContent();
+						msgdate = eElement1.getElementsByTagName("pubDate").item(0).getTextContent();
+						description = description.replaceAll("<[^>]*>", "");
+						description = description.substring(0,description.indexOf("הנרשם לשירות"));
+						msgdate = msgdate.replace("T", " ");
+						msgdate = msgdate.replace("Z", " ");
+						del = dbhandler.sendwarning(description, msgdate, textAreaEmailLog);
+					}
+				}
+			}
+		}
+//		System.out.println("before if - del = " + del);
+		if(del == 0 ){
+			fXmlFile.delete();
+		}else{
+			System.out.println(XmlFile);
+			txtDataLog.insert(datehandler.getDate() + " Warning : " + XmlFile.substring(XmlFile.lastIndexOf("\\")) + "\n", 0);
+			txtDataLog.update(txtDataLog.getGraphics());
+		}
+	}
+	public static void SeaXMLParser (String XmlFile){
 		//System.out.println("Starting parsering XML file " + XmlFile);
 		File fXmlFile = new File(XmlFile);
 		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
@@ -37,7 +100,7 @@ public class xmlhandler {
 			Element element;
 			for(int a = 0; a < aList.getLength(); a++){
 				element = (Element) aList.item(a);
-				System.out.println(aList.item(a));
+//				System.out.println(aList.item(a));
 				//System.out.println("==================================");
 				String LocationName = element.getElementsByTagName("LocationNameEng").item(0).getTextContent();
 				String FromTime0 = element.getElementsByTagName("DateTimeFrom").item(0).getTextContent();
@@ -60,7 +123,7 @@ public class xmlhandler {
 						WindDir1 = element.getElementsByTagName("ElementValue").item(4).getTextContent();
 					break;}
 					default:
-						System.out.println("ERROR XMLParser");
+//						System.out.println("ERROR XMLParser");
 				}
 				String FromTime1 = element.getElementsByTagName("DateTimeFrom").item(1).getTextContent();
 				String ToTime1 = element.getElementsByTagName("DateTimeTo").item(1).getTextContent();
@@ -80,6 +143,10 @@ public class xmlhandler {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+	public static void weatherXMLParser(String xMLFile) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }
