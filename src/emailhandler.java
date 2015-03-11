@@ -14,7 +14,6 @@ import javax.mail.internet.MimeMessage;
 public class emailhandler {
 
 	public static void sentmsg(String Email, String msgmsg , String msgsub) throws AddressException, MessagingException{
-//		System.out.println("Emailing : " + Email);
 		String host = "smtp.gmail.com";
         String port = "587";
         String subject = msgsub;
@@ -80,9 +79,6 @@ public class emailhandler {
 	}
 	public static String prpmsg(String location) throws Exception{
 		String[] Data = dbhandler.ReadWaveDataFromDataBase(location);
-//		for(int i=0 ; i<Data.length ; i++){
-//			System.out.println("Data["+ i + "] = " +  Data[i]);
-//		}
 		int a, b, c, d, Starting, Ending = 0;
 		Data[3] = Data[3].replaceAll("\\s","");
 		Data[10] = Data[10].replaceAll("\\s","");
@@ -94,7 +90,6 @@ public class emailhandler {
 		Ending = (c+d)/2;
 		String Status = null;
 		int sum = Integer.valueOf(Starting) - Integer.valueOf(Ending);
-		//System.out.println((Data[1].substring(Data[1].length()-5,Data[1].length()-3)));
 		if(Integer.valueOf(Data[1].substring(Data[1].length()-5,Data[1].length()-3)) == 8){
 			if(sum>0){
 				Status = "לאורך היום הים  במגמת עליה";
@@ -116,10 +111,6 @@ public class emailhandler {
 				 Status = "לאורך הלילה  הים לא משתנה ";
 			}
 		}
-		
-			
-				
-		//System.out.println("prepering email for  " + Data[0]);
 		//het heb translation for location
 		String HeblocationName=null;
 		switch (Data[0]){
@@ -223,9 +214,6 @@ public class emailhandler {
 		message +="<p align=\"right\">  התחזית מעודכנת מתאריך : " + datehandler.reformat(Data[14]) + "</p>";
 		message += "<p align=\"right\">" + " במידה ואינך מעוניין/ת לקבל מייל זה יותר אנא שלח/י מייל בחוזר ותוסר/י בהקדם האפשרי " + "</p>";
 		message += "</body></html>";
-		System.out.println("");
-		System.out.println(message);
-		System.out.println("");
 		return message;
 		
 	}

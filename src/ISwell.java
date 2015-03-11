@@ -159,17 +159,14 @@ public class ISwell {
 							Path = "/root/ISwell/DownloadFolder/isramar/isr_weather/";
 						}
 //		    			XMLFile = filehandler.DownLoadFile(cd + ".xml", Path , url);
-		    			filehandler.download(String.valueOf(url), Path + cd + ".xml");
-//		    			analyze = SubClass.shouldanalyzeweatherxml(XMLFile);
-		    			analyze = false;
-		    			if(analyze == true){
-		    				xmlhandler.weatherXMLParser(XMLFile);
-		    				txtDataLog.insert("Data update on : " + cd + "\n", 0);
-//		    				Socialhandler.PostToFacebook();
-		    			}else{
-//		    				File file = new File(XMLFile);
-//		    				file.delete();
-		    			}
+		    			XMLFile = filehandler.download(String.valueOf(url), Path + cd + ".xml");
+		    			if(SubClass.IsProgrammer()){
+							Path = "C:\\ISwell\\Data\\GeneralForcast\\";
+						}else{
+							Path = "/root/ISwell/Data/GeneralForcast/";
+						}
+		    			xmlhandler.weatherXMLParser(XMLFile, Path, txtDataLog);
+//		    			txtDataLog.insert("Weather update on : " + cd + "\n", 0);
 		    			//start analize clients
 						dbhandler.ReadEmailListFromDataBase(txtEmailLog , txtSMSLog);
 						SubClass.chackforwarnings(txtEmailLog, txtDataLog);

@@ -103,9 +103,6 @@ public class dbhandler {
 	    ResultSet rs = stmt.executeQuery(sql);
 	    while(rs.next()){
 	    	String dbusername = rs.getString("username");
-//	    	if(dbusername.toLowerCase() == "Yuval".toLowerCase()){
-//	    		System.out.println("Stoping");
-//	    	}
 	    	String dbemail = rs.getString("email");
 	    	String dbLastTimeSent = rs.getString("LastTimeSent");
 	    	String dbToSend = rs.getString("ToSend");
@@ -114,8 +111,6 @@ public class dbhandler {
 	    	String dbPreferTimeToGetEmail = rs.getString("PreferTimeToGetEmail");
 	    	String SendToPhone = rs.getString("SendToPhone");
 	    	String PhoneNum = rs.getString("PhoneNum");
-//	    	System.out.println(" ");
-//	    	System.out.println("Handeling : " + dbusername + " from height " + dbfromheight);
 	    		String cd = datehandler.getDate();
 		    	String currenttime = cd.substring(8,10);
 		    	String currentdate = cd.substring(6,8);
@@ -126,13 +121,11 @@ public class dbhandler {
 		    			int location = dblocation.indexOf(",");
 		    			if(location==(-1)){
 		    		    	String sql1 = "SELECT * FROM iswell.xmlparser WHERE LocationName='"+ dbhandler.GetLocationTranslate(dblocation) +"' order by id desc limit 1;";
-//		    		    	System.out.println(sql1);
 		    		    	stmt1 = conn.createStatement();
 		    			    ResultSet rs1 = stmt1.executeQuery(sql1);
 		    			    rs1.next();
 		    		    	String dbheight = rs1.getString("SeaHeight0");
 		    		    	dbheight = dbheight.substring(dbheight.indexOf("-")+1);
-		    		    	System.out.println(dbusername + " wants from = " + dbfromheight + " and the height  is " + dbheight);
 		    		    	if(Integer.valueOf(dbheight)>Integer.valueOf(dbfromheight)){
 		    		    		if(Integer.parseInt(dbToSend) == 1){
 		    		    			textAreaEmailLog.insert(datehandler.getDate() + " Emailing update: " + dbemail + "\n", 0);
@@ -147,7 +140,6 @@ public class dbhandler {
 		    		    			dbhandler.WriteLastSend(dbemail);
 		    		    		}
 		    		    	}else{
-//		    		    		System.out.println(Integer.valueOf(dbheight) + " >= " + Integer.valueOf(dbfromheight));
 		    		    	}
 		    				
 		    			}else{
@@ -157,7 +149,6 @@ public class dbhandler {
 		    			    rs1.next();
 		    		    	String dbheight = rs1.getString("SeaHeight0");
 		    		    	dbheight = dbheight.substring(dbheight.indexOf("-")+1);
-//		    		    	System.out.println("dbfromheight = " + dbfromheight + " dbheight = " + dbheight);
 		    		    	if(Integer.valueOf(dbheight) >= Integer.valueOf(dbfromheight)){
 		    		    		if(Integer.parseInt(dbToSend) == 1){
 		    		    			textAreaEmailLog.insert(datehandler.getDate() + " Emailing Update: " + dbemail + "\n", 0);
@@ -173,7 +164,6 @@ public class dbhandler {
 		    		    		}
 			    				
 		    		    	}else{
-//		    		    		System.out.println(Integer.valueOf(dbheight) + " >= " + Integer.valueOf(dbfromheight));
 		    		    	}
 		    			}
 		    			while(location >= 0){
@@ -198,7 +188,6 @@ public class dbhandler {
 		    		    		}
 		    		    		
 		    		    	}else{
-//		    		    		System.out.println(Integer.valueOf(dbheight) + " >= " + Integer.valueOf(dbfromheight));
 		    		    	}
 		    		    	location = dblocation.indexOf(",",location+1);
 		    		    	if(location==(-1)){
@@ -208,11 +197,8 @@ public class dbhandler {
 		    			}
 		    			
 		    		}else{
-//		    			System.out.println("PreferTime <= currenttime : " + Integer.parseInt(PreferTime) + " <= " +  Integer.parseInt(currenttime));
-//			    		System.out.println("currentdate != LastTime : " + Integer.parseInt(currentdate) + " != " + Integer.parseInt(LastTime));
 		    		}
 		    	}else{
-//		    		System.out.println(dbusername + " doesnt want to get an email or SMS");
 		    	}
 	    }
 	}
@@ -388,6 +374,7 @@ public class dbhandler {
 		      conn = DriverManager.getConnection(DB_URL, USER, PASS);
 		      stmt = conn.createStatement();
 		      String sql2 = "UPDATE clients SET LastLongRangeSent = \"" + LastLongRangeSent + "\" WHERE email = \"" + Email + "\"";
+		      System.out.println(sql2);
 		      stmt.executeUpdate(sql2);
 		   }catch(SQLException se){
 		      se.printStackTrace();
@@ -430,16 +417,9 @@ public class dbhandler {
 	    		String Now_dd = msgdate.substring(8,10);
 	    		String Now_hh = msgdate.substring(11,13);
 	    		String Now_mm = msgdate.substring(14,16);
-//		    		System.out.print(Last_dd + "<" + Now_dd + " -> ");
-//		    		System.out.println(Integer.valueOf(Last_dd) < Integer.valueOf(Now_dd));
-//		    		System.out.print(Last_dd + "=" + Now_dd + " & " + Now_hh + ">" + Last_hh + " -> ");
-//		    		System.out.println(Integer.valueOf(Last_dd) == Integer.valueOf(Now_dd) && Integer.valueOf(Now_hh)>Integer.valueOf(Last_hh));
-//		    		System.out.print(Last_dd + "=" + Now_dd + " & " + Now_hh + ">" + Last_hh + " "+ Now_mm + ">" + Last_mm + " -> ");
-//		    		System.out.println(Integer.valueOf(Last_dd) == Integer.valueOf(Now_dd) && Integer.valueOf(Now_hh) == Integer.valueOf(Last_hh) && Integer.valueOf(Now_mm)>Integer.valueOf(Last_mm));
 	    		//                anouther day                       ||                         anouther hour                                                                    ||                                                                         anouther min                                          
 	    		if(((Integer.valueOf(Last_dd) < Integer.valueOf(Now_dd))||(Integer.valueOf(Last_dd) == Integer.valueOf(Now_dd) && Integer.valueOf(Now_hh)>Integer.valueOf(Last_hh)) || (Integer.valueOf(Last_dd) == Integer.valueOf(Now_dd) && Integer.valueOf(Now_hh) == Integer.valueOf(Last_hh) && Integer.valueOf(Now_mm)>Integer.valueOf(Last_mm)))){
 	    			try {
-//		    				System.out.println("emailing : " + email);
 	    				if(email.equals("yuval.glasman@gmail.com")){
 							emailhandler.sentmsg( email,msg, "Emailing warning : " + msgdate);
 							dbhandler.WriteLastwarningSent(email, msgdate);
@@ -447,7 +427,6 @@ public class dbhandler {
 	    		    		textAreaEmailLog.update(textAreaEmailLog.getGraphics());
 							del++;
 	    				}
-//							System.out.println("inside if ! ! ! del = " + del);
 					} catch (AddressException e) {
 						e.printStackTrace();
 					} catch (MessagingException e) {
@@ -512,7 +491,6 @@ public class dbhandler {
 	    	if(LastLongRangeSent == null){
 	    		LastLongRangeSent = "2014-01-01 01:02:03";
 	    	}
-	    	System.out.println("for email : " + email + " LastLongRangeSent = " +  LastLongRangeSent);
 	    	String maxday = "0";
 	    	String maxheight = "0";
 	    	if(Integer.valueOf(ToSend) == 1){
@@ -524,21 +502,12 @@ public class dbhandler {
 		            	}
 		            }
 	    		}
-	    		System.out.println("sea will max out on : " + maxday + " and it will be : " + maxheight);
 	    		String sentmonth = LastLongRangeSent.substring(5,7);
 	    		String sentday = LastLongRangeSent.substring(8,10);
-	    		System.out.println("sentday = " + sentday + " sentmonth = " + sentmonth);
 	    		String month = maxday.substring(maxday.length()-4,maxday.length()-2);
 	    		String day = maxday.substring(maxday.length()-2,maxday.length());
-	    		System.out.println("day = " + day + " month = " + month);
-	    		System.out.println("Integer.valueOf(sentday) < Integer.valueOf(day)+4 " + Integer.valueOf(sentday) +"<"+ (Integer.valueOf(day) + 4)  );
-	    		//this is it!!!
-	    		System.out.println("Integer.valueOf(sentmonth) != Integer.valueOf(month) " + Integer.valueOf(sentmonth) +"!="+ Integer.valueOf(month));
 	    		if(Integer.valueOf(sentday) < (Integer.valueOf(day)+4) || Integer.valueOf(sentmonth) != Integer.valueOf(month)){
-	    			System.out.println("Double.valueOf(FromHeight) = " + Double.valueOf(FromHeight));
-	    			System.out.println("Double.valueOf(maxheight)*100 = " + Double.valueOf(maxheight)*100);
 	    			if(Double.valueOf(FromHeight) <= Double.valueOf(maxheight)*100){
-	    				System.out.println(maxday.substring(0,maxday.length()-4));
 	    				DecimalFormat df = new DecimalFormat("#.##");
 	    				String msg = "get ready, its going to be : " + df.format(Double.valueOf(maxheight)/3) + " on the : " + day + "\\" + month + " which is next " + maxday.substring(0,maxday.length()-4);
 	    				String sub = "Long Range Forcast";

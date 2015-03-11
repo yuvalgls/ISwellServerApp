@@ -1,5 +1,6 @@
 import java.io.File;
 import java.io.IOException;
+import java.net.UnknownHostException;
 import java.sql.SQLException;
 
 import javax.mail.MessagingException;
@@ -144,9 +145,74 @@ public class xmlhandler {
 			e.printStackTrace();
 		}
 	}
-	public static void weatherXMLParser(String xMLFile) {
-		// TODO Auto-generated method stub
-		
+	public static void weatherXMLParser(String xMLFile, String Path, JTextArea txtDataLog) throws ParserConfigurationException, SAXException, IOException {
+		DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+		Document doc = documentBuilder.parse(xMLFile);
+		doc.getDocumentElement().normalize();
+		NodeList nodeList = doc.getDocumentElement().getChildNodes();
+		findsubnodes(nodeList, Path, txtDataLog);
+		if(flg == 3){
+			File file = new File(xMLFile);
+			file.delete();
+		}
+	}
+	
+	static String Date= null, ElementNameHebrew = null,  ElementNameEnglish = null, ElementValueHebrew = null, ElementValueEnglish = null;
+	static int flg = 0; //1 is for heb, 2 english, 3 break all
+	static String IssueDate;
+	public static void findsubnodes(NodeList nodeList, String Path, JTextArea txtDataLog) throws UnknownHostException {
+		for (int itr = 0; itr < nodeList.getLength(); itr++) {
+			Node node = nodeList.item(itr);
+			if(node.getNodeName().equals("IssueDateTime")){
+				IssueDate = node.getTextContent();
+				IssueDate = IssueDate.replaceAll(":", "-");
+				String[] files = filehandler.FindSubFiles(Path);
+				for(int a = 0 ; a<files.length ; a++){
+					if((files[a].substring(0,files[a].length()-4)).equals(IssueDate)){
+						flg = 3;
+						return;
+					}
+				}
+				txtDataLog.insert("Weather update on : " + datehandler.getDate() + "\n", 0);
+				txtDataLog.update(txtDataLog.getGraphics());
+			}
+			if(node.getNodeName().equals("Date")){
+				Date = node.getTextContent();
+			}
+			if(node.getNodeName().equals("ElementValue") && node.getTextContent().indexOf("RSS") < 0){
+				if(flg == 1){
+					ElementValueHebrew = node.getTextContent();
+				}else{
+					ElementValueEnglish = node.getTextContent();
+				}
+			}
+			if(node.getTextContent().equals("Weather in Hebrew")){
+				flg = 1;
+			}
+			if(node.getTextContent().equals("Weather in English")){
+				flg = 2;
+			}
+			if(Date != null && (ElementValueEnglish != null && ElementValueHebrew != null) && ElementValueEnglish.indexOf("RSS") < 0){
+//				System.out.println(Date + " " + ElementValueHebrew);
+				if(SubClass.IsProgrammer()){
+					filehandler.SaveTXTFile(Path + IssueDate + ".txt", Date + " " + ElementValueHebrew);
+				}else{
+					filehandler.SaveTXTFile(Path + IssueDate + ".txt", Date + " " + ElementValueHebrew);
+				}
+				
+				Date = null;
+				ElementValueHebrew = null;
+				ElementValueEnglish = null;
+			}
+			NodeList SubnodeList = node.getChildNodes();
+			if (SubnodeList.getLength() > 1) {
+				if(flg == 3){
+					return;
+				}
+				findsubnodes(SubnodeList, Path, txtDataLog);
+			}
+		}
 	}
 
 }
